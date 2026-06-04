@@ -120,5 +120,7 @@ cd ~/inwanding-infra
 
 ## 相關文件
 
+- [server.md](server.md) — 主機與正式環境 **Single Source of Truth**
 - [docs/DEPLOY.md](docs/DEPLOY.md) — 部署與驗證流程
 - [docs/RESTORE.md](docs/RESTORE.md) — 還原 SOP（含僅供參考的進階步驟）
+- [docs/ROADMAP.md](docs/ROADMAP.md) — 後續規劃
