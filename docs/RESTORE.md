@@ -6,10 +6,12 @@
 
 | 類型 | 預設路徑 | 產生方式 |
 |------|----------|----------|
-| Nginx conf | `~/inwanding-infra/backups/nginx-conf.d/*.bak` | `./scripts/backup-nginx-conf.sh` |
-| PostgreSQL dump | `~/inwanding-infra/backups/postgres/*.sql.gz` | `./scripts/backup-db-volume.sh`（需手動執行） |
+| Nginx conf | `~/inwanding-infra/backups/nginx-conf.d/<檔名>.<UTC>.bak` | `./scripts/backup-nginx-conf.sh` |
+| PostgreSQL dump | `~/inwanding-infra/backups/postgres/appdb_<UTC>.sql.gz` | `./scripts/backup-db-volume.sh`（**尚未在正式環境試跑**） |
 
 `backups/` 目錄在 `.gitignore` 中，**不會**進版控。
+
+Nginx 備份腳本行為摘要：從 `nginx/conf.d/` 複製到 `backups/nginx-conf.d/`，檔名附加 UTC 時間戳（如 `default.conf.20260603T094039Z.bak`），**不刪除**舊 `.bak`。
 
 正式 DB 資料仍在 Docker volume：**`nginx_pg_data`**（掛載於 `svc-postgres:/var/lib/postgresql/data`）。
 
@@ -28,24 +30,34 @@
 ```bash
 cd ~/inwanding-infra
 
-# 1) 選擇備份檔（例）
+# 1) 列出備份（新到舊）
 ls -lt backups/nginx-conf.d/
+# 例：default.conf.20260603T094039Z.bak
 
-# 2) 覆寫前可再備份現況
+# 2) 覆寫前先備份「目前」狀態（避免還原錯版本）
 ./scripts/backup-nginx-conf.sh
 
-# 3) 還原（請替換為實際檔名）
-cp -a backups/nginx-conf.d/default.conf.YYYYMMDDTHHMMSSZ.bak nginx/conf.d/default.conf
+# 3) 設定要還原的檔案（請改成實際檔名）
+BACKUP=backups/nginx-conf.d/default.conf.20260603T094039Z.bak
+TARGET=nginx/conf.d/default.conf
 
-# 4) 驗證並 reload
+# 4) 還原前可先比對差異
+diff -u "$TARGET" "$BACKUP" || true
+
+# 5) 還原
+cp -a "$BACKUP" "$TARGET"
+
+# 6) 驗證並 reload（失敗則不要 reload）
 docker exec edge-nginx nginx -t
 docker exec edge-nginx nginx -s reload
 
-# 5) 驗證（見 DEPLOY.md）
-curl -sI -H "Host: not-exist.inwanding.com" http://127.0.0.1:8080/
+# 7) 驗證（見 DEPLOY.md）
+curl -sI -H "Host: inwanding.com" http://127.0.0.1:8080/
+curl -sI -H "Host: api.inwanding.com" http://127.0.0.1:8080/health
+curl -sI -H "Host: not-exist.inwanding.com" http://127.0.0.1:8080/   # 預期 404
 ```
 
-不需重建 `edge-nginx` 容器（bind mount 會反映主機檔案）。
+不需重建 `edge-nginx` 容器（bind mount 會反映主機檔案）。還原僅影響主機上的 conf 檔，**在 `nginx -t` 成功前不要 reload**。
 
 ---
 

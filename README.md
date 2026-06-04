@@ -72,11 +72,29 @@ curl -sI -H "Host: not-exist.inwanding.com" http://127.0.0.1:8080/   # 預期 40
 ./scripts/deploy.sh
 ```
 
-## 備份腳本（需手動執行）
+## Nginx conf 備份（已驗證可用）
+
+在 repo 根目錄執行（**只複製檔案，不 reload nginx、不刪舊備份**）：
 
 ```bash
+cd ~/inwanding-infra
 ./scripts/backup-nginx-conf.sh
-./scripts/backup-db-volume.sh   # 執行前請閱讀腳本註解與 docs/RESTORE.md
+```
+
+| 項目 | 說明 |
+|------|------|
+| 來源 | `nginx/conf.d/*`（目前為 `default.conf`） |
+| 目標目錄 | `backups/nginx-conf.d/`（已在 `.gitignore`，不進 git） |
+| 檔名格式 | `<檔名>.<UTC 時間戳>.bak`，例：`default.conf.20260603T094039Z.bak` |
+| 時間戳 | UTC，`date -u +%Y%m%dT%H%M%SZ` |
+| 行為 | `cp -a` 保留權限；**不會**刪除既有 `.bak` |
+
+成功時終端機會印出 `[OK] ... -> backups/nginx-conf.d/...`。改 conf 前、部署前建議先跑一輪（見 [docs/DEPLOY.md](docs/DEPLOY.md)）。還原步驟見 [docs/RESTORE.md](docs/RESTORE.md)。
+
+### 其他備份腳本（尚未在正式環境試跑）
+
+```bash
+./scripts/backup-db-volume.sh   # pg_dump；執行前請閱讀腳本與 RESTORE.md，需另行確認
 ```
 
 腳本**不會**自動排程；請勿在未確認前加入 cron。

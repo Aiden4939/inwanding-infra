@@ -10,7 +10,26 @@ Cloudflare Tunnel：**不在此流程修改**（維持指向 `http://127.0.0.1:8
 - [ ] `.env` 存在且變數完整（對照 `.env.example`）
 - [ ] 正式容器由本 compose 管理：`docker compose ps` 應見 `edge-nginx`、`svc-web`、`svc-api`、`svc-postgres`
 - [ ] 無計畫中的 DB volume 異動（`nginx_pg_data` 保持 `external: true`）
-- [ ] 若會改 Nginx conf：已先執行 `./scripts/backup-nginx-conf.sh`
+- [ ] 若會改 Nginx conf，或本次部署含 conf 變更：已先執行 `./scripts/backup-nginx-conf.sh`
+
+### 建議：部署前先備份 Nginx conf
+
+低風險、不影響連線（僅 `cp` 至 `backups/nginx-conf.d/`）：
+
+```bash
+cd ~/inwanding-infra
+./scripts/backup-nginx-conf.sh
+ls -lt backups/nginx-conf.d/    # 確認最新 .bak 存在
+```
+
+預期檔名：`default.conf.<UTC>.bak`（例 `default.conf.20260603T094039Z.bak`）。可選擇比對：
+
+```bash
+diff -u nginx/conf.d/default.conf backups/nginx-conf.d/default.conf.<UTC>.bak
+# 無輸出表示與備份當下內容一致
+```
+
+僅改 image、不動 conf 時，仍建議在重大部署前備份一次，方便 rollback。
 
 ## Compose 設定驗證
 
