@@ -45,6 +45,7 @@ inwanding-infra/
 | 環境變數 | `~/inwanding-infra/.env` |
 | DB Docker volume | `nginx_pg_data`（compose 內別名 `pg_data`，`external: true`） |
 | Cloudflare Tunnel | `/etc/cloudflared/config.yml`（系統層，不在此 repo） |
+| Git remote | `git@github.com:Aiden4939/inwanding-infra.git`（SSH；見 `~/.ssh/id_ed25519_github_inwanding`） |
 
 舊目錄 `~/infra/nginx` 僅供歷史參考，**請勿**以此目錄的 compose 操作正式服務。
 
@@ -91,13 +92,23 @@ cd ~/inwanding-infra
 
 成功時終端機會印出 `[OK] ... -> backups/nginx-conf.d/...`。改 conf 前、部署前建議先跑一輪（見 [docs/DEPLOY.md](docs/DEPLOY.md)）。還原步驟見 [docs/RESTORE.md](docs/RESTORE.md)。
 
-### 其他備份腳本（尚未在正式環境試跑）
+### PostgreSQL 邏輯備份（已於正式環境試跑）
 
 ```bash
-./scripts/backup-db-volume.sh   # pg_dump；執行前請閱讀腳本與 RESTORE.md，需另行確認
+cd ~/inwanding-infra
+./scripts/backup-db-volume.sh
 ```
 
-腳本**不會**自動排程；請勿在未確認前加入 cron。
+| 項目 | 說明 |
+|------|------|
+| 機制 | `pg_dump`（容器 `svc-postgres`）→ `gzip` |
+| 目標目錄 | `backups/postgres/`（勿提交 git） |
+| 檔名格式 | `appdb_<UTC>.sql.gz`，例：`appdb_20260604T040732Z.sql.gz` |
+| 首次正式備份 | **2026-06-04 UTC**（`appdb_20260604T040732Z.sql.gz`，372B；當時 DB 幾無 user tables，偏小屬正常） |
+
+執行後驗證：`gzip -t`、`gunzip -c ... | head`、本機 `curl` 打 `api.inwanding.com/health` → 200。詳見 [docs/RESTORE.md](docs/RESTORE.md)。
+
+腳本**不會**自動排程或刪除舊備份；請勿在未確認前加入 cron。
 
 ## 禁止事項
 

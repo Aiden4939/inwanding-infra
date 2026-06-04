@@ -7,7 +7,7 @@
 | 類型 | 預設路徑 | 產生方式 |
 |------|----------|----------|
 | Nginx conf | `~/inwanding-infra/backups/nginx-conf.d/<檔名>.<UTC>.bak` | `./scripts/backup-nginx-conf.sh` |
-| PostgreSQL dump | `~/inwanding-infra/backups/postgres/appdb_<UTC>.sql.gz` | `./scripts/backup-db-volume.sh`（**尚未在正式環境試跑**） |
+| PostgreSQL dump | `~/inwanding-infra/backups/postgres/appdb_<UTC>.sql.gz` | `./scripts/backup-db-volume.sh`（**2026-06-04 正式試跑成功**） |
 
 `backups/` 目錄在 `.gitignore` 中，**不會**進版控。
 

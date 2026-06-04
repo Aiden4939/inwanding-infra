@@ -11,6 +11,7 @@ Cloudflare Tunnel：**不在此流程修改**（維持指向 `http://127.0.0.1:8
 - [ ] 正式容器由本 compose 管理：`docker compose ps` 應見 `edge-nginx`、`svc-web`、`svc-api`、`svc-postgres`
 - [ ] 無計畫中的 DB volume 異動（`nginx_pg_data` 保持 `external: true`）
 - [ ] 若會改 Nginx conf，或本次部署含 conf 變更：已先執行 `./scripts/backup-nginx-conf.sh`
+- [ ] 重大部署或 DB 相關變更前：建議執行 `./scripts/backup-db-volume.sh`（見 [RESTORE.md](RESTORE.md)）
 
 ### 建議：部署前先備份 Nginx conf
 
@@ -30,6 +31,15 @@ diff -u nginx/conf.d/default.conf backups/nginx-conf.d/default.conf.<UTC>.bak
 ```
 
 僅改 image、不動 conf 時，仍建議在重大部署前備份一次，方便 rollback。
+
+### 建議：重大變更前備份 DB（邏輯 dump）
+
+```bash
+cd ~/inwanding-infra
+./scripts/backup-db-volume.sh
+ls -lh backups/postgres/
+gzip -t backups/postgres/appdb_<UTC>.sql.gz
+```
 
 ## Compose 設定驗證
 

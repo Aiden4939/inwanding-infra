@@ -2,7 +2,7 @@
 
 適用 repo：`~/inwanding-infra`  
 主機：`web-ubuntu`  
-最後對照現況：2026-06-03
+最後對照現況：2026-06-04
 
 本文僅為規劃與追蹤，**不代表已排程執行**。實際操作前請依各項「是否需要批准」與 SOP 進行。
 
@@ -19,11 +19,11 @@
 | Git init、首次 commit（`d34b343`） | 完成 |
 | README / DEPLOY / RESTORE 初稿 | 完成 |
 | `scripts/backup-nginx-conf.sh` 試跑驗證 | 完成 |
-| `scripts/deploy.sh`、`backup-db-volume.sh` 骨架 | 完成（DB 腳本未試跑） |
+| `scripts/deploy.sh`、`backup-db-volume.sh` | 完成 |
 | Cloudflare Tunnel → `127.0.0.1:8080` | 完成，無需變更 |
-| Git remote / push | **未完成**（暫緩） |
-| Phase 6 文件補強（README/DEPLOY/RESTORE） | **已編輯，尚未 commit** |
-| DB 邏輯備份試跑 | **未完成** |
+| Git remote（SSH）+ push | 完成（`git@github.com:Aiden4939/inwanding-infra.git`） |
+| Phase 6 文件補強 | 完成（commit `88dd9fa`） |
+| **P1-1 首次 DB 邏輯備份** | **完成**（2026-06-04 UTC，`appdb_20260604T040732Z.sql.gz`） |
 | `pg_data` / `app-whoami` / 舊 `~/infra/nginx` 清理 | **未完成** |
 | `svc-web` 換正式 frontend image | **未完成**（產品層） |
 | `server.md` 與 repo docs 同步 | **未完成** |
@@ -72,12 +72,14 @@
 
 讓備份與還原從「文件 + 骨架」變成「驗證過的操作」。
 
-### P1-1：首次試跑 DB 邏輯備份（`backup-db-volume.sh`）
+### P1-1：首次試跑 DB 邏輯備份（`backup-db-volume.sh`）— **已完成**
 
 | 欄位 | 內容 |
 |------|------|
 | **目標** | 產出第一份可還原的 `pg_dump` 壓縮檔至 `backups/postgres/` |
 | **完成條件** | 存在非空的 `appdb_<UTC>.sql.gz`；`gunzip -c … \| head` 可見 SQL；腳本 exit 0 |
+| **完成日期** | **2026-06-04 UTC** |
+| **備份檔** | `backups/postgres/appdb_20260604T040732Z.sql.gz`（372B；當時 DB 無 user tables，偏小屬正常） |
 | **風險等級** | 低～中（`pg_dump` 讀取為主，正式寫入風險低；需注意磁碟與短暫 I/O） |
 | **是否需要批准** | **是**（正式 DB 相關操作） |
 | **建議順序** | 4 |
@@ -245,7 +247,7 @@ P0-1 → P0-2 → P0-3
 | 13 | P2-5 | 同步 `server.md`（里程碑後） |
 | 14–17 | P3 | 正式 web、API 文件、監控告警、DR |
 
-**近期最值得先做（低風險、高價值）：** P0-1、P0-2、P1-1（經批准後）。
+**近期最值得先做（低風險、高價值）：** P1-3（備份保留策略）、P1-4（deploy 演練）、P2-5（`server.md` 同步，里程碑後可重複）。
 
 **明確暫緩（除非你另行指示）：** 刪除 `nginx_pg_data`、修改 cloudflared、未批准之 DB 還原演練、未批准之 volume/容器刪除。
 
@@ -268,3 +270,4 @@ P0-1 → P0-2 → P0-3
 |------|------|
 | 2026-06-03 | 初版：依 Phase 1–6 現況與 repo 狀態建立 |
 | 2026-06-03 | 增補 P2-5 `server.md`、P2-6 RAM 升級；強化 P3-3 監控完成條件；調整建議總順序 |
+| 2026-06-04 | P1-1 首次 DB 備份完成；文件同步 |
