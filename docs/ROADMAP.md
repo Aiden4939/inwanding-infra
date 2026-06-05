@@ -29,6 +29,21 @@
 | `server.md` 與 repo docs 同步 | **完成**（2026-06-04，`~/inwanding-infra/server.md`） |
 | `web-ubuntu` RAM 升級（4GB → ≥6GB） | **未完成** |
 | 監控 / 告警可執行落地 | **未完成**（P3-3 已規劃） |
+| **P0-1** 文件 commit（`88dd9fa`） | **完成** |
+| **P0-2** Git remote + push（後改 SSH） | **完成** |
+| **P0-3** 變更紀錄習慣 | 進行中（文件已註，持續實踐） |
+| git push 與 MCP PAT 分離 | **完成**（PAT revoke 暫緩） |
+| `docs/NEXT_SESSION.md` 接手文件 | **完成**（2026-06-04） |
+
+### 下一步（需留意批准項）
+
+| 優先 | 代號 | 需批准 |
+|------|------|--------|
+| 1 | **P1-3** 備份保留策略 | cron/自動刪檔時需批准 |
+| 2 | **P1-4** deploy 演練 | **是** |
+| 3 | **P2-1** pg_data 只讀調查 | 刪除時另案批准 |
+| — | P1-2 DB 還原演練 | **是（高風險）** |
+| — | P2-2 / P2-6 / P3 / MCP 安全後續 | **是** |
 
 ---
 
@@ -36,24 +51,26 @@
 
 優先讓 repo 成為可交接、可追蹤的單一真相來源。
 
-### P0-1：提交 Phase 6 文件變更
+### P0-1：提交 Phase 6 文件變更 — **已完成**
 
 | 欄位 | 內容 |
 |------|------|
 | **目標** | 將已驗證的 nginx conf 備份說明納入 git，與現場操作一致 |
 | **完成條件** | `README.md`、`docs/DEPLOY.md`、`docs/RESTORE.md` 變更已 commit；`git status` clean（不含 `backups/`） |
+| **完成** | commit `88dd9fa`（2026-06-03） |
 | **風險等級** | 低 |
 | **是否需要批准** | 否（僅文件） |
 | **建議順序** | 1 |
 
-### P0-2：設定 Git remote 並首次 push
+### P0-2：設定 Git remote 並 push — **已完成**
 
 | 欄位 | 內容 |
 |------|------|
-| **目標** | 將 infra 設定異地備份於 Git 託管（建議 private repo） |
-| **完成條件** | `git remote add origin <URL>`、`git push -u origin main` 成功；遠端可見 compose / nginx / docs / scripts |
-| **風險等級** | 低（注意勿 push `.env`；`.gitignore` 已排除） |
-| **是否需要批准** | **是**（需提供 remote URL、確認 repo 可見性） |
+| **目標** | 將 infra 設定異地備份於 Git 託管 |
+| **完成條件** | remote 設定、`push` 成功；遠端可見 compose / nginx / docs / scripts |
+| **完成** | `Aiden4939/inwanding-infra`；remote 已改 **SSH**（`git@github.com:...`） |
+| **風險等級** | 低 |
+| **是否需要批准** | **是**（已完成） |
 | **建議順序** | 2 |
 
 ### P0-3：建立變更紀錄習慣
@@ -248,7 +265,7 @@ P0-1 → P0-2 → P0-3
 | 13 | P2-5 | 同步 `server.md`（里程碑後） |
 | 14–17 | P3 | 正式 web、API 文件、監控告警、DR |
 
-**近期最值得先做（低風險、高價值）：** P1-3（備份保留策略）、P1-4（deploy 演練）、P2-5（`server.md` 同步，里程碑後可重複）。
+**近期最值得先做（低風險、高價值）：** **P1-3**（備份保留策略）→ **P1-4**（deploy 演練，需批准）→ **P2-1**（pg_data 只讀調查）。接手詳見 **`docs/NEXT_SESSION.md`**。
 
 **明確暫緩（除非你另行指示）：** 刪除 `nginx_pg_data`、修改 cloudflared、未批准之 DB 還原演練、未批准之 volume/容器刪除。
 
@@ -272,3 +289,4 @@ P0-1 → P0-2 → P0-3
 | 2026-06-03 | 初版：依 Phase 1–6 現況與 repo 狀態建立 |
 | 2026-06-03 | 增補 P2-5 `server.md`、P2-6 RAM 升級；強化 P3-3 監控完成條件；調整建議總順序 |
 | 2026-06-04 | P1-1 首次 DB 備份完成；`server.md` SST 建立；文件同步 |
+| 2026-06-04 | 收尾：`NEXT_SESSION.md`、P0/P1/P2-5 狀態同步、下一主線 P1-3 |

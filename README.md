@@ -27,12 +27,13 @@ Internet
 
 ```
 inwanding-infra/
+├── server.md             # 主機 SST（Single Source of Truth）
 ├── docker-compose.yml    # 正式 stack 定義
 ├── .env.example          # 環境變數範例（可提交）
 ├── .env                  # 正式密碼（勿提交，見 .gitignore）
 ├── nginx/conf.d/         # Nginx 設定（bind mount 進 edge-nginx）
 ├── scripts/              # 備份、部署腳本
-├── docs/                 # DEPLOY / RESTORE SOP
+├── docs/                 # ROADMAP、NEXT_SESSION、DEPLOY、RESTORE
 └── backups/              # 本機備份輸出（勿提交 git）
 ```
 
@@ -120,7 +121,8 @@ cd ~/inwanding-infra
 
 ## 相關文件
 
+- [docs/NEXT_SESSION.md](docs/NEXT_SESSION.md) — **下次接手先讀**
 - [server.md](server.md) — 主機與正式環境 **Single Source of Truth**
+- [docs/ROADMAP.md](docs/ROADMAP.md) — 後續規劃與批准項
 - [docs/DEPLOY.md](docs/DEPLOY.md) — 部署與驗證流程
 - [docs/RESTORE.md](docs/RESTORE.md) — 還原 SOP（含僅供參考的進階步驟）
-- [docs/ROADMAP.md](docs/ROADMAP.md) — 後續規劃
