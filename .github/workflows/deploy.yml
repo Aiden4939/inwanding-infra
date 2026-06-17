@@ -1,0 +1,105 @@
+name: Deploy Service (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "Compose service to deploy"
+        required: true
+        default: line-bot
+        type: choice
+        options:
+          - line-bot
+          - api
+
+concurrency:
+  group: deploy-web-ubuntu
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, x64, web-ubuntu, deploy]
+    timeout-minutes: 15
+
+    steps:
+      - name: Validate service input
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ inputs.service }}" in
+            line-bot|api) ;;
+            *)
+              echo "[ERROR] Unsupported service: ${{ inputs.service }}"
+              exit 1
+              ;;
+          esac
+
+      - name: Deploy selected service
+        shell: bash
+        env:
+          SERVICE: ${{ inputs.service }}
+          INFRA_ROOT: /home/aiden/inwanding-infra
+        run: |
+          set -euo pipefail
+          cd "${INFRA_ROOT}"
+
+          echo "[INFO] === 1/4 docker compose config ==="
+          docker compose config >/dev/null
+          echo "[OK]   compose config passed"
+
+          echo "[INFO] === 2/4 docker compose pull ${SERVICE} ==="
+          docker compose pull "${SERVICE}"
+
+          echo "[INFO] === 3/4 docker compose up -d ${SERVICE} ==="
+          docker compose up -d "${SERVICE}"
+
+          echo "[INFO] === 4/4 docker compose ps ==="
+          docker compose ps
+
+      - name: Health check
+        shell: bash
+        env:
+          SERVICE: ${{ inputs.service }}
+        run: |
+          set -euo pipefail
+
+          case "${SERVICE}" in
+            line-bot)
+              HEALTH_URL="http://127.0.0.1:8080/health"
+              HEALTH_HOST="linebot.inwanding.com"
+              ;;
+            api)
+              HEALTH_URL="http://127.0.0.1:8080/health"
+              HEALTH_HOST="api.inwanding.com"
+              ;;
+            *)
+              echo "[ERROR] Unsupported service: ${SERVICE}"
+              exit 1
+              ;;
+          esac
+
+          echo "[INFO] Health check: ${HEALTH_URL} (Host: ${HEALTH_HOST})"
+          for i in 1 2 3 4 5; do
+            if curl -fsS "${HEALTH_URL}" -H "Host: ${HEALTH_HOST}"; then
+              echo
+              echo "[OK]   health check passed"
+              exit 0
+            fi
+            echo "[WARN] attempt ${i}/5 failed, retrying in 3s..."
+            sleep 3
+          done
+
+          echo "[ERROR] health check failed after retries"
+          exit 1
+
+      - name: Dump service logs on failure
+        if: failure()
+        shell: bash
+        env:
+          SERVICE: ${{ inputs.service }}
+          INFRA_ROOT: /home/aiden/inwanding-infra
+        run: |
+          set +e
+          cd "${INFRA_ROOT}"
+          docker compose ps
+          docker compose logs --tail=100 "${SERVICE}"
