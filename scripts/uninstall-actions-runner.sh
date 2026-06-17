@@ -15,10 +15,14 @@ fi
 
 cd "${RUNNER_HOME}"
 
+echo "[INFO] 停止 user systemd service..."
+systemctl --user disable --now actions.runner.inwanding-infra.service 2>/dev/null || true
+rm -f "${HOME}/.config/systemd/user/actions.runner.inwanding-infra.service"
+systemctl --user daemon-reload
+
 if [[ -f "./svc.sh" ]]; then
-  echo "[INFO] 停止並移除 systemd service..."
-  sudo ./svc.sh stop || true
-  sudo ./svc.sh uninstall || true
+  echo "[INFO] 若曾用 sudo 安裝 system service，可手動執行："
+  echo "  cd ${RUNNER_HOME} && sudo ./svc.sh stop && sudo ./svc.sh uninstall"
 fi
 
 if [[ -f "./config.sh" && -n "${RUNNER_REMOVE_TOKEN:-}" ]]; then

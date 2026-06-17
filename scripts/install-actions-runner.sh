@@ -56,9 +56,39 @@ else
     --replace
 fi
 
-echo "[INFO] 安裝 systemd service（需要 sudo 密碼）..."
-sudo ./svc.sh install "${RUNNER_USER}"
-sudo ./svc.sh start
-sudo ./svc.sh status
+echo "[INFO] 準備 runsvc.sh..."
+cp -f ./bin/runsvc.sh ./runsvc.sh
+chmod 755 ./runsvc.sh
+
+USER_UNIT_DIR="${HOME}/.config/systemd/user"
+USER_UNIT_FILE="${USER_UNIT_DIR}/actions.runner.inwanding-infra.service"
+mkdir -p "${USER_UNIT_DIR}"
+
+cat > "${USER_UNIT_FILE}" <<EOF
+[Unit]
+Description=GitHub Actions Runner (Aiden4939-inwanding-infra.web-ubuntu-infra)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=${RUNNER_HOME}/runsvc.sh
+WorkingDirectory=${RUNNER_HOME}
+KillMode=process
+KillSignal=SIGTERM
+TimeoutStopSec=5min
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+EOF
+
+echo "[INFO] 啟動 user systemd service..."
+systemctl --user daemon-reload
+systemctl --user enable --now actions.runner.inwanding-infra.service
+systemctl --user status actions.runner.inwanding-infra.service --no-pager || true
+
+echo "[INFO] 若要開機後自動運行（無需登入），請手動執行："
+echo "  sudo loginctl enable-linger ${RUNNER_USER}"
 
 echo "[OK]   runner 安裝完成。請至 GitHub → Settings → Actions → Runners 確認 Online/Idle"

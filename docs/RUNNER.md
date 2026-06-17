@@ -29,7 +29,13 @@ export RUNNER_REGISTRATION_TOKEN='貼上 token'
 驗證：
 
 - GitHub UI：Runners 頁面顯示 `web-ubuntu-infra` 為 **Idle**
-- 主機：`sudo /home/aiden/actions-runner-infra/svc.sh status`
+- 主機：`systemctl --user status actions.runner.inwanding-infra.service`
+
+開機自動運行（建議，需 sudo 一次）：
+
+```bash
+sudo loginctl enable-linger aiden
+```
 
 ## 3. 手動 Deploy（GitHub UI）
 
