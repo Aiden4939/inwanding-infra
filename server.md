@@ -1,7 +1,7 @@
 # Web Core 伺服器狀態（server.md）
 
 > **Single Source of Truth** for `web-ubuntu` Web Core infra.  
-> **最後更新：** 2026-06-04 UTC  
+> **最後更新：** 2026-06-12 UTC  
 > **接手入口：** [docs/NEXT_SESSION.md](docs/NEXT_SESSION.md)  
 > **詳細 SOP：** `README.md`、`docs/DEPLOY.md`、`docs/RESTORE.md`、`docs/ROADMAP.md`
 
@@ -56,8 +56,10 @@ Internet
   → 127.0.0.1:8080（edge-nginx）
        ├─ inwanding.com / www.inwanding.com → svc-web:80（whoami 占位）
        ├─ api.inwanding.com                 → svc-api:3000
+       ├─ linebot.inwanding.com             → svc-line-bot:3000
        └─ 其他 Host（default_server）       → 404
   → svc-api → svc-postgres（volume: nginx_pg_data）
+  → svc-line-bot → svc-line-bot-db（volume: line_bot_pg_data）
 ```
 
 ---
@@ -70,6 +72,8 @@ Internet
 | `svc-web` | web | `traefik/whoami` **占位** |
 | `svc-api` | api | `ghcr.io/aiden4939/inwanding-api:latest` |
 | `svc-postgres` | db | PostgreSQL 16 |
+| `svc-line-bot` | line-bot | `ghcr.io/aiden4939/line-reminder-bot:latest` |
+| `svc-line-bot-db` | line-bot-db | PostgreSQL 16（LINE Reminder Bot 專用） |
 
 **殘留（不影響 8080）：** `app-whoami`（舊 project `nginx`，ROADMAP **P2-2**，待批准）。
 

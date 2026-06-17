@@ -97,15 +97,17 @@ bind mount 為唯讀；改主機檔後不需重建 `edge-nginx` 容器。
 curl -sI -H "Host: inwanding.com" http://127.0.0.1:8080/
 curl -sI -H "Host: www.inwanding.com" http://127.0.0.1:8080/
 curl -sI -H "Host: api.inwanding.com" http://127.0.0.1:8080/health
+curl -s -H "Host: linebot.inwanding.com" http://127.0.0.1:8080/health   # 預期 {"ok":true}
 curl -sI -H "Host: not-exist.inwanding.com" http://127.0.0.1:8080/   # 預期 404
 
 # 公網（經 Tunnel + Cloudflare）
 curl -sI https://inwanding.com/
 curl -sI https://www.inwanding.com/
 curl -sI https://api.inwanding.com/health
+curl -s https://linebot.inwanding.com/health   # 預期 {"ok":true}
 
 # 日誌
-docker compose logs --tail=50 nginx api
+docker compose logs --tail=50 nginx api line-bot
 ```
 
 API 根路徑 `/` 回 404 若應用未實作屬正常；以 `/health` 為準。

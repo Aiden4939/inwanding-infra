@@ -10,6 +10,7 @@ services:
     depends_on:
       - web
       - api
+      - line-bot
 
   web:
     image: traefik/whoami
@@ -45,7 +46,47 @@ services:
     networks:
       - default
 
+  line-bot:
+    image: ghcr.io/aiden4939/line-reminder-bot:latest
+    container_name: svc-line-bot
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+      TZ: "Asia/Taipei"
+      LINE_CHANNEL_SECRET: "${LINE_CHANNEL_SECRET}"
+      LINE_CHANNEL_ACCESS_TOKEN: "${LINE_CHANNEL_ACCESS_TOKEN}"
+      DB_HOST: "line-bot-db"
+      DB_PORT: "5432"
+      DB_NAME: "${LINE_BOT_DB_NAME}"
+      DB_USER: "${LINE_BOT_DB_USER}"
+      DB_PASSWORD: "${LINE_BOT_DB_PASSWORD}"
+    depends_on:
+      line-bot-db:
+        condition: service_healthy
+    networks:
+      - default
+
+  line-bot-db:
+    image: postgres:16-alpine
+    container_name: svc-line-bot-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${LINE_BOT_DB_NAME}"
+      POSTGRES_USER: "${LINE_BOT_DB_USER}"
+      POSTGRES_PASSWORD: "${LINE_BOT_DB_PASSWORD}"
+    volumes:
+      - line_bot_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${LINE_BOT_DB_USER} -d ${LINE_BOT_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - default
+
 volumes:
   pg_data:
     external: true
     name: nginx_pg_data
+  line_bot_pg_data:
