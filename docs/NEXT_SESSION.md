@@ -1,12 +1,33 @@
 # 下次對話接手指南（NEXT_SESSION）
 
 > **用途：** 下次開工先讀本檔，再接 `server.md` 與 `docs/ROADMAP.md`。  
-> **最後更新：** 2026-06-04 UTC  
-> **遠端 main：** `bf69250`（`Aiden4939/inwanding-infra`）
+> **最後更新：** 2026-06-22 UTC  
+> **遠端 main：** 見 `git log -1`（`Aiden4939/inwanding-infra`）
 
 ---
 
-## A. 目前做到哪裡
+## Telegram Agent Bot 部署（2026-06-22，進行中）
+
+| 項目 | 狀態 |
+|------|------|
+| compose / nginx / deploy workflow 已 commit | ✅ `05162e4` |
+| GHCR image（telegram-agent-bot repo） | ✅ push main 觸發建置 |
+| 主機 `git pull` + `.env` + tunnel | ⏳ **待做** |
+| GitHub Action deploy `telegram-bot` | ❌ 曾失敗：`no such service: telegram-playwright`（主機 compose 過期） |
+
+**下一手：**
+
+1. SSH `web-ubuntu` → `cd ~/inwanding-infra && git pull`
+2. `.env` 補 `TELEGRAM_*`（見 `.env.example`）
+3. `./scripts/setup-telegrambot-tunnel.sh`（首次）
+4. Actions → **Deploy Service (Manual)** → `telegram-bot`
+
+詳見 **[docs/DEPLOY_TELEGRAM_BOT.md](DEPLOY_TELEGRAM_BOT.md)**。  
+Bot 專案接手：**`telegram-agent-bot/docs/NEXT_SESSION.md`**
+
+---
+
+## A. 目前做到哪裡（Web Core）
 
 - 正式 stack 已由 `~/inwanding-infra/docker-compose.yml` 接管（`edge-nginx`、`svc-web`、`svc-api`、`svc-postgres`）
 - Nginx 未知 Host → **404**（`default_server` 已修正）
