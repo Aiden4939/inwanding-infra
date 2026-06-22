@@ -11,6 +11,7 @@ services:
       - web
       - api
       - line-bot
+      - telegram-bot
 
   web:
     image: traefik/whoami
@@ -85,8 +86,49 @@ services:
     networks:
       - default
 
+  telegram-playwright:
+    image: ghcr.io/aiden4939/telegram-playwright-service:latest
+    container_name: svc-telegram-playwright
+    restart: unless-stopped
+    networks:
+      - default
+
+  telegram-bot:
+    image: ghcr.io/aiden4939/telegram-agent-bot:latest
+    container_name: svc-telegram-bot
+    restart: unless-stopped
+    environment:
+      PORT: "3001"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+      ALLOWED_TELEGRAM_USER_IDS: "${ALLOWED_TELEGRAM_USER_IDS}"
+      OPENAI_API_KEY: "${TELEGRAM_OPENAI_API_KEY}"
+      LLM_MODEL: "${TELEGRAM_LLM_MODEL:-gpt-4o-mini}"
+      INTERNAL_API_SECRET: "${TELEGRAM_INTERNAL_API_SECRET}"
+      INTENT_ROUTER: "${TELEGRAM_INTENT_ROUTER:-llm}"
+      CURSOR_API_KEY: "${TELEGRAM_CURSOR_API_KEY}"
+      AGENT_MODEL: "${TELEGRAM_AGENT_MODEL:-composer-2.5}"
+      DEFAULT_CWD: "${TELEGRAM_DEFAULT_CWD:-/workspace}"
+      ALLOWED_CWD_ROOTS: "${TELEGRAM_ALLOWED_CWD_ROOTS:-/workspace}"
+      DEV_BRIEF_REPLY: "${TELEGRAM_DEV_BRIEF_REPLY:-true}"
+      RUN_TIMEOUT_MS: "${TELEGRAM_RUN_TIMEOUT_MS:-600000}"
+      SESSION_DB_PATH: "/app/data/bot.db"
+      PLAYWRIGHT_SERVICE_URL: "http://telegram-playwright:3100"
+      SCRAPE_MODE: "${TELEGRAM_SCRAPE_MODE:-inline}"
+      SCRAPE_TIMEOUT_MS: "${TELEGRAM_SCRAPE_TIMEOUT_MS:-120000}"
+      TELEGRAM_MODE: "webhook"
+      WEBHOOK_PATH: "/telegram/webhook"
+      WEBHOOK_URL: "${TELEGRAM_WEBHOOK_URL:-https://tgbot.inwanding.com/telegram/webhook}"
+    volumes:
+      - telegram_bot_data:/app/data
+      - ${TELEGRAM_WORKSPACE_HOST_PATH:-/home/aiden/inwanding}:/workspace:ro
+    depends_on:
+      - telegram-playwright
+    networks:
+      - default
+
 volumes:
   pg_data:
     external: true
     name: nginx_pg_data
   line_bot_pg_data:
+  telegram_bot_data:

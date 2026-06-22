@@ -57,9 +57,11 @@ Internet
        ├─ inwanding.com / www.inwanding.com → svc-web:80（whoami 占位）
        ├─ api.inwanding.com                 → svc-api:3000
        ├─ linebot.inwanding.com             → svc-line-bot:3000
+       ├─ tgbot.inwanding.com               → svc-telegram-bot:3001
        └─ 其他 Host（default_server）       → 404
   → svc-api → svc-postgres（volume: nginx_pg_data）
   → svc-line-bot → svc-line-bot-db（volume: line_bot_pg_data）
+  → svc-telegram-bot → svc-telegram-playwright（volume: telegram_bot_data）
 ```
 
 ---
@@ -74,6 +76,8 @@ Internet
 | `svc-postgres` | db | PostgreSQL 16 |
 | `svc-line-bot` | line-bot | `ghcr.io/aiden4939/line-reminder-bot:latest` |
 | `svc-line-bot-db` | line-bot-db | PostgreSQL 16（LINE Reminder Bot 專用） |
+| `svc-telegram-playwright` | telegram-playwright | `ghcr.io/aiden4939/telegram-playwright-service:latest` |
+| `svc-telegram-bot` | telegram-bot | `ghcr.io/aiden4939/telegram-agent-bot:latest` |
 
 **殘留（不影響 8080）：** `app-whoami`（舊 project `nginx`，ROADMAP **P2-2**，待批准）。
 

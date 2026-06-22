@@ -11,6 +11,7 @@ on:
         options:
           - line-bot
           - api
+          - telegram-bot
 
 concurrency:
   group: deploy-web-ubuntu
@@ -27,7 +28,7 @@ jobs:
         run: |
           set -euo pipefail
           case "${{ inputs.service }}" in
-            line-bot|api) ;;
+            line-bot|api|telegram-bot) ;;
             *)
               echo "[ERROR] Unsupported service: ${{ inputs.service }}"
               exit 1
@@ -47,14 +48,34 @@ jobs:
           docker compose config >/dev/null
           echo "[OK]   compose config passed"
 
-          echo "[INFO] === 2/4 docker compose pull ${SERVICE} ==="
-          docker compose pull "${SERVICE}"
-
-          echo "[INFO] === 3/4 docker compose up -d ${SERVICE} ==="
-          docker compose up -d "${SERVICE}"
+          if [[ "${SERVICE}" == "telegram-bot" ]]; then
+            echo "[INFO] === 2/4 docker compose pull telegram-playwright telegram-bot ==="
+            docker compose pull telegram-playwright telegram-bot
+            echo "[INFO] === 3/4 docker compose up -d telegram-playwright telegram-bot ==="
+            docker compose up -d telegram-playwright telegram-bot
+          else
+            echo "[INFO] === 2/4 docker compose pull ${SERVICE} ==="
+            docker compose pull "${SERVICE}"
+            echo "[INFO] === 3/4 docker compose up -d ${SERVICE} ==="
+            docker compose up -d "${SERVICE}"
+          fi
 
           echo "[INFO] === 4/4 docker compose ps ==="
           docker compose ps
+
+      - name: Reload nginx
+        shell: bash
+        env:
+          INFRA_ROOT: /home/aiden/inwanding-infra
+        run: |
+          set -euo pipefail
+          if docker ps --format '{{.Names}}' | grep -qx edge-nginx; then
+            docker exec edge-nginx nginx -t
+            docker exec edge-nginx nginx -s reload
+            echo "[OK]   nginx reload 完成"
+          else
+            echo "[WARN] edge-nginx 未運行，略過 reload"
+          fi
 
       - name: Health check
         shell: bash
@@ -71,6 +92,10 @@ jobs:
             api)
               HEALTH_URL="http://127.0.0.1:8080/health"
               HEALTH_HOST="api.inwanding.com"
+              ;;
+            telegram-bot)
+              HEALTH_URL="http://127.0.0.1:8080/health"
+              HEALTH_HOST="tgbot.inwanding.com"
               ;;
             *)
               echo "[ERROR] Unsupported service: ${SERVICE}"
@@ -102,4 +127,8 @@ jobs:
           set +e
           cd "${INFRA_ROOT}"
           docker compose ps
-          docker compose logs --tail=100 "${SERVICE}"
+          if [[ "${SERVICE}" == "telegram-bot" ]]; then
+            docker compose logs --tail=100 telegram-playwright telegram-bot
+          else
+            docker compose logs --tail=100 "${SERVICE}"
+          fi

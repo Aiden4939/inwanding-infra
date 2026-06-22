@@ -22,6 +22,9 @@ Internet
 | `svc-web` | 前端（目前為 whoami 占位） |
 | `svc-api` | API（`ghcr.io/aiden4939/inwanding-api:latest`） |
 | `svc-postgres` | PostgreSQL 16 |
+| `svc-line-bot` | LINE Reminder Bot |
+| `svc-telegram-bot` | Telegram Agent Bot（webhook + Cursor SDK） |
+| `svc-telegram-playwright` | Telegram Bot 網頁抓取服務 |
 
 ## 目錄結構
 
@@ -125,4 +128,5 @@ cd ~/inwanding-infra
 - [server.md](server.md) — 主機與正式環境 **Single Source of Truth**
 - [docs/ROADMAP.md](docs/ROADMAP.md) — 後續規劃與批准項
 - [docs/DEPLOY.md](docs/DEPLOY.md) — 部署與驗證流程
+- [docs/DEPLOY_TELEGRAM_BOT.md](docs/DEPLOY_TELEGRAM_BOT.md) — Telegram Agent Bot 部署 SOP
 - [docs/RESTORE.md](docs/RESTORE.md) — 還原 SOP（含僅供參考的進階步驟）
