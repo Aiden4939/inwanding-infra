@@ -1,8 +1,28 @@
 # 下次對話接手指南（NEXT_SESSION）
 
 > **用途：** 下次開工先讀本檔，再接 `server.md` 與 `docs/ROADMAP.md`。  
-> **最後更新：** 2026-06-22 UTC  
+> **最後更新：** 2026-06-23  
 > **遠端 main：** 見 `git log -1`（`Aiden4939/inwanding-infra`）
+
+---
+
+## LINE Reminder Bot 部署（2026-06-23）
+
+| 項目 | 狀態 |
+|------|------|
+| compose：`line-bot` + `line-bot-db` + OpenAI/Flex env | ✅ `04bb0ab`, `2408de5` |
+| OpenAI key 共用 `TELEGRAM_OPENAI_API_KEY` | ✅ `2408de5` |
+| 使用者 deploy `line-bot` | ✅ 已部署 |
+| Rich Menu | ❌ **需手動** `line-reminder-bot` → `npm run setup-rich-menu` |
+| Flex 卡片 | ⚠️ 查詢提醒 + 有待發送提醒 |
+
+**下一手：**
+
+1. 主機 `.env` 確認 `TELEGRAM_OPENAI_API_KEY`（LINE NLU 用）
+2. `git pull` 後 redeploy `line-bot`（workflow **不會**自動 pull）
+3. Rich Menu：見 **`line-reminder-bot/docs/NEXT_SESSION.md`**
+
+Bot 專案接手：**`line-reminder-bot/docs/NEXT_SESSION.md`**
 
 ---
 
