@@ -34,13 +34,31 @@ Telegram 伺服器
 TELEGRAM_BOT_TOKEN=...
 ALLOWED_TELEGRAM_USER_IDS=你的_telegram_user_id
 TELEGRAM_OPENAI_API_KEY=sk-...
+LINE_OPENAI_API_KEY=sk-...             # 可選：僅 LINE bot 使用；未填則沿用 TELEGRAM_OPENAI_API_KEY
 TELEGRAM_INTERNAL_API_SECRET=隨機字串
 TELEGRAM_CURSOR_API_KEY=...          # 若要使用開發任務
+TELEGRAM_LLM_MODEL=gpt-4o-mini
+TELEGRAM_AGENT_MODEL=composer-2.5
+TELEGRAM_INTENT_ROUTER=llm
+TELEGRAM_DEV_BRIEF_REPLY=true
+TELEGRAM_RUN_TIMEOUT_MS=600000
+TELEGRAM_SCRAPE_MODE=inline
+TELEGRAM_SCRAPE_TIMEOUT_MS=120000
 TELEGRAM_WORKSPACE_HOST_PATH=/home/aiden/inwanding
 TELEGRAM_DEFAULT_CWD=/workspace
 TELEGRAM_ALLOWED_CWD_ROOTS=/workspace
 TELEGRAM_WEBHOOK_URL=https://tgbot.inwanding.com/telegram/webhook
 ```
+
+### `.env` 變數對照（避免填了但沒生效）
+
+| infra `.env` key | 容器內 env key | 服務 | 說明 |
+|---|---|---|---|
+| `TELEGRAM_OPENAI_API_KEY` | `OPENAI_API_KEY` | `telegram-bot` | Telegram bot OpenAI 金鑰 |
+| `LINE_OPENAI_API_KEY`（優先） / `TELEGRAM_OPENAI_API_KEY`（回退） | `OPENAI_API_KEY` | `line-bot` | LINE bot OpenAI 金鑰 |
+| `TELEGRAM_CURSOR_API_KEY` | `CURSOR_API_KEY` | `telegram-bot` | Cursor SDK 開發任務 |
+| `TELEGRAM_INTERNAL_API_SECRET` | `INTERNAL_API_SECRET` | `telegram-bot` | 內部 API 驗證 |
+| `TELEGRAM_WEBHOOK_URL` | `WEBHOOK_URL` | `telegram-bot` | Telegram webhook 目標 URL |
 
 ### 2. Cloudflare Tunnel + DNS
 
