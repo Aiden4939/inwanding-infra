@@ -1,7 +1,7 @@
 # 下次對話接手指南（NEXT_SESSION）
 
 > **用途：** 下次開工先讀本檔，再接 `server.md` 與 `docs/ROADMAP.md`。  
-> **最後更新：** 2026-06-25  
+> **最後更新：** 2026-06-30  
 > **遠端 main：** 見 `git log -1`（`Aiden4939/inwanding-infra`）
 
 ---
@@ -33,8 +33,11 @@ Bot 專案接手：**`line-reminder-bot/docs/NEXT_SESSION.md`**
 |------|------|
 | compose / nginx / deploy workflow 已 commit | ✅ `05162e4` |
 | GHCR image（telegram-agent-bot repo） | ✅ push main 觸發建置 |
-| compose 已補 Cloud dev env 映射（`DEV_RUNTIME`、`CLOUD_*`） | ✅ 2026-06-25 |
-| `.env.example` 已補 Cloud dev 參數與說明 | ✅ 2026-06-25 |
+| compose 已補 Cloud dev env 映射（`DEV_RUNTIME`、`CLOUD_*`） | ✅ `63d545a` |
+| `.env.example` 已補 Cloud dev 參數與說明 | ✅ `63d545a` |
+| compose ops Phase 1（`OPS_*` env + docker.sock） | ✅ 2026-06-30 |
+| `.env.example` / `DEPLOY_TELEGRAM_BOT.md` ops 說明 | ✅ 2026-06-30 |
+| `telegram-agent-bot` ops Phase 1 image | ⏳ `feat/ops-phase1-executor` **待 merge** |
 | 主機 `git pull` + `.env` + tunnel | ⏳ **待做** |
 | GitHub Action deploy `telegram-bot` | ❌ 曾失敗：`no such service: telegram-playwright`（主機 compose 過期） |
 
@@ -42,9 +45,11 @@ Bot 專案接手：**`line-reminder-bot/docs/NEXT_SESSION.md`**
 
 1. SSH `web-ubuntu` → `cd ~/inwanding-infra && git pull`
 2. `.env` 補齊 Cloud dev 必填（至少 `TELEGRAM_CLOUD_REPOS`）
-3. `docker compose config | sed -n '/telegram-bot:/,/^[^ ]/p'` 確認 `DEV_RUNTIME`、`CLOUD_*`
-4. `./scripts/setup-telegrambot-tunnel.sh`（首次）
-5. Actions → **Deploy Service (Manual)** → `telegram-bot`
+3. `.env` 補齊 ops 參數（`TELEGRAM_OPS_*`，對照 `.env.example`）
+4. `docker compose config` 確認 `DEV_RUNTIME`、`CLOUD_*`、`OPS_*`、docker.sock 掛載
+5. `./scripts/setup-telegrambot-tunnel.sh`（首次）
+6. 等 `telegram-agent-bot` ops image merge → Actions **Deploy Service (Manual)** → `telegram-bot`
+7. Telegram 測試 ops 查詢（容器狀態、log、磁碟、健康檢查）
 
 詳見 **[docs/DEPLOY_TELEGRAM_BOT.md](DEPLOY_TELEGRAM_BOT.md)**。  
 Bot 專案接手：**`telegram-agent-bot/docs/NEXT_SESSION.md`**

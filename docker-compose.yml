@@ -127,9 +127,16 @@ services:
       TELEGRAM_MODE: "webhook"
       WEBHOOK_PATH: "/telegram/webhook"
       WEBHOOK_URL: "${TELEGRAM_WEBHOOK_URL:-https://tgbot.inwanding.com/telegram/webhook}"
+      OPS_ENABLED: "${TELEGRAM_OPS_ENABLED:-true}"
+      OPS_DOCKER_ENABLED: "${TELEGRAM_OPS_DOCKER_ENABLED:-true}"
+      OPS_ALLOWED_CONTAINERS: "${TELEGRAM_OPS_ALLOWED_CONTAINERS:-svc-telegram-bot,svc-telegram-playwright,svc-line-bot,edge-nginx}"
+      OPS_HEALTH_URLS: "${TELEGRAM_OPS_HEALTH_URLS:-}"
+      OPS_COMMAND_TIMEOUT_MS: "${TELEGRAM_OPS_COMMAND_TIMEOUT_MS:-30000}"
+      OPS_LOG_TAIL_LINES: "${TELEGRAM_OPS_LOG_TAIL_LINES:-50}"
     volumes:
       - telegram_bot_data:/app/data
       - ${TELEGRAM_WORKSPACE_HOST_PATH:-/home/aiden/inwanding}:/workspace:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - telegram-playwright
     networks:
