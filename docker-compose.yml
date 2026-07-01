@@ -116,8 +116,8 @@ services:
       CLOUD_BASE_BRANCH: "${TELEGRAM_CLOUD_BASE_BRANCH:-main}"
       CLOUD_AUTO_CREATE_PR: "${TELEGRAM_CLOUD_AUTO_CREATE_PR:-true}"
       CLOUD_SKIP_REVIEWER_REQUEST: "${TELEGRAM_CLOUD_SKIP_REVIEWER_REQUEST:-true}"
-      DEFAULT_CWD: "${TELEGRAM_DEFAULT_CWD:-/workspace}"
-      ALLOWED_CWD_ROOTS: "${TELEGRAM_ALLOWED_CWD_ROOTS:-/workspace}"
+      DEFAULT_CWD: "${TELEGRAM_DEFAULT_CWD:-/app}"
+      ALLOWED_CWD_ROOTS: "${TELEGRAM_ALLOWED_CWD_ROOTS:-/app}"
       DEV_BRIEF_REPLY: "${TELEGRAM_DEV_BRIEF_REPLY:-true}"
       RUN_TIMEOUT_MS: "${TELEGRAM_RUN_TIMEOUT_MS:-600000}"
       SESSION_DB_PATH: "/app/data/bot.db"
@@ -144,7 +144,6 @@ services:
       TAISHIN_ACCOUNT_ID: "${TELEGRAM_TAISHIN_ACCOUNT_ID:-}"
     volumes:
       - telegram_bot_data:/app/data
-      - ${TELEGRAM_WORKSPACE_HOST_PATH:-/home/aiden/inwanding}:/workspace:ro
     depends_on:
       - telegram-playwright
     networks:

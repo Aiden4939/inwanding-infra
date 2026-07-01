@@ -10,7 +10,7 @@ Telegram 伺服器
   → cloudflared → edge-nginx:8080
   → svc-telegram-bot:3001
        ├─ scrape → svc-telegram-playwright:3100
-       ├─ dev    → Cursor SDK（讀 /workspace 掛載）
+      ├─ dev    → Cursor SDK（cloud runtime）
        ├─ ops    → HTTP Health Check（Docker 查詢預設停用）
        ├─ securities → 台新 Nova API 持股查詢（預設關閉）
        └─ chat   → OpenAI
@@ -24,7 +24,7 @@ Telegram 伺服器
   - `ghcr.io/aiden4939/telegram-playwright-service:latest`
 - [ ] 主機 `~/inwanding-infra` 已 `git pull`
 - [ ] `.env` 已填入 Telegram / OpenAI / Cursor 相關變數（對照 `.env.example`）
-- [ ] 主機上有程式碼目錄（預設 `/home/aiden/inwanding`），供 dev 任務掛載為 `/workspace`
+- [ ] `.env` 已設定 `TELEGRAM_DEV_RUNTIME=cloud`
 
 ## 首次部署步驟
 
@@ -46,9 +46,8 @@ TELEGRAM_DEV_BRIEF_REPLY=true
 TELEGRAM_RUN_TIMEOUT_MS=600000
 TELEGRAM_SCRAPE_MODE=inline
 TELEGRAM_SCRAPE_TIMEOUT_MS=120000
-TELEGRAM_WORKSPACE_HOST_PATH=/home/aiden/inwanding
-TELEGRAM_DEFAULT_CWD=/workspace
-TELEGRAM_ALLOWED_CWD_ROOTS=/workspace
+TELEGRAM_DEFAULT_CWD=/app
+TELEGRAM_ALLOWED_CWD_ROOTS=/app
 TELEGRAM_WEBHOOK_URL=https://tgbot.inwanding.com/telegram/webhook
 
 # ops（Phase 0A：Bot 不掛載 docker.sock）
@@ -64,6 +63,24 @@ TELEGRAM_OPS_LOG_TAIL_LINES=50
 TELEGRAM_GITHUB_TOKEN=ghp_...
 TELEGRAM_GITHUB_ALLOWED_REPOS=Aiden4939/telegram-agent-bot
 TELEGRAM_GITHUB_ISSUE_LIMIT=10
+
+# Task guardrails
+TASK_MAX_MODEL_CALLS=30
+TASK_MAX_TOOL_CALLS=80
+TASK_MAX_RUNTIME_MS=900000
+TASK_MAX_ESTIMATED_COST=5
+DAILY_MAX_ESTIMATED_COST=50
+MONTHLY_MAX_ESTIMATED_COST=500
+LOG_MAX_LINES=80
+LOG_MAX_BYTES=12000
+TASK_APPROVAL_TTL_MS=900000
+TOOL_CALL_TIMEOUT_MS=120000
+MODEL_CALL_TIMEOUT_MS=120000
+TASK_HEARTBEAT_TIMEOUT_MS=300000
+USER_MESSAGE_PER_MINUTE_LIMIT=15
+USER_CONCURRENT_DEV_TASK_LIMIT=1
+GLOBAL_CONCURRENT_AGENT_LIMIT=3
+MIN_AGENT_START_INTERVAL_MS=60000
 ```
 
 ### `.env` 變數對照（避免填了但沒生效）
@@ -177,7 +194,7 @@ docker compose up -d telegram-playwright telegram-bot
 ## 注意事項
 
 - Bot 使用 **webhook 模式**，`WEBHOOK_URL` 必須是 HTTPS 公網網址。
-- **開發任務**需 `TELEGRAM_CURSOR_API_KEY`，且容器內 `/workspace` 必須能讀到程式碼。
+- **開發任務**需 `TELEGRAM_CURSOR_API_KEY`，Production 使用 cloud runtime，不掛載 host `/workspace`。
 - **ops 查詢**預設僅 HTTP Health Check；**不得**為 Bot 掛載 docker.sock。
 - **台新證券持股查詢（GH-1）**：image 已內建 `taishin-sdk`；`.env` 與憑證準備好後再設 `TELEGRAM_TAISHIN_ENABLED=true`（見下方）。
 - SQLite 資料在 volume `telegram_bot_data`，**勿隨意刪除**。
@@ -229,6 +246,10 @@ docker compose up -d telegram-bot
 # 確認 Bot 不再掛載 docker.sock
 docker inspect svc-telegram-bot --format '{{json .Mounts}}'
 # 預期：輸出中不應含 /var/run/docker.sock
+
+# 確認不再掛載 host workspace
+docker inspect svc-telegram-bot --format '{{json .Mounts}}'
+# 預期：輸出中不應含 /workspace
 
 # 確認 Docker Ops 已停用
 docker exec svc-telegram-bot printenv OPS_DOCKER_ENABLED
