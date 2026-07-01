@@ -1,8 +1,8 @@
 # 下次對話接手指南（NEXT_SESSION）
 
 > **用途：** 下次開工先讀本檔，再接 `server.md` 與 `docs/ROADMAP.md`。  
-> **最後更新：** 2026-06-30  
-> **遠端 main：** 見 `git log -1`（`Aiden4939/inwanding-infra`）
+> **最後更新：** 2026-07-01  
+> **遠端 main：** `4ed6a91`（`Aiden4939/inwanding-infra`）
 
 ---
 
@@ -27,7 +27,54 @@ Bot 專案接手：**`line-reminder-bot/docs/NEXT_SESSION.md`**
 
 ---
 
-## Telegram Agent Bot 部署（2026-06-25，進行中）
+## Telegram Agent Bot 部署（GH-4，2026-07-01）
+
+| 項目 | 狀態 |
+|------|------|
+| Phase 0A：移除 Bot `docker.sock` 掛載、`OPS_DOCKER_ENABLED` 預設 false | ✅ bot `8a09067`、infra `6973cd0` |
+| Phase 0B：webhook 強制 `DEV_RUNTIME=cloud` 啟動護欄 | ✅ bot `68e8fb9` |
+| Phase 1：GitHub 唯讀查詢（issues / PR 列表） | ✅ bot `68e8fb9` |
+| infra compose 映射 `TELEGRAM_GITHUB_*` | ✅ infra `4ed6a91` |
+| `.env.example` / `DEPLOY_TELEGRAM_BOT.md` GitHub 說明 | ✅ infra `4ed6a91` |
+| Agent review（Bugbot，2 輪，發現項已修正） | ✅ |
+| GHCR image（push `telegram-agent-bot` main） | ⏳ 等 build 完成 |
+| 主機 `git pull` + `.env` + redeploy | ⏳ **待做** |
+
+**主機 `.env` 需補（GH-4 新增）：**
+
+```env
+TELEGRAM_GITHUB_TOKEN=ghp_...                          # read-only PAT
+TELEGRAM_GITHUB_ALLOWED_REPOS=Aiden4939/telegram-agent-bot
+TELEGRAM_GITHUB_ISSUE_LIMIT=10                         # 選填，預設 10
+```
+
+**既有建議確認（若尚未設定）：**
+
+```env
+TELEGRAM_DEV_RUNTIME=cloud
+TELEGRAM_CLOUD_REPOS=Aiden4939/telegram-agent-bot,...  # cloud dev 必填
+TELEGRAM_OPS_DOCKER_ENABLED=false                      # Production 保持 false
+TELEGRAM_OPS_HEALTH_URLS=http://api:3000/health,...    # 見 DEPLOY_TELEGRAM_BOT.md
+```
+
+**下一手（部署）：**
+
+1. SSH `web-ubuntu` → `cd ~/inwanding-infra && git pull`
+2. 編輯 `.env` 補上 `TELEGRAM_GITHUB_*`（見上）
+3. 等 GHCR build 完成
+4. `docker compose pull telegram-playwright telegram-bot`
+5. `docker compose up -d telegram-playwright telegram-bot`
+6. Telegram 驗證：「幫我看 telegram-agent-bot 有哪些 open issue」
+
+詳見 **[docs/DEPLOY_TELEGRAM_BOT.md](DEPLOY_TELEGRAM_BOT.md)**。  
+Bot 專案接手：**`telegram-agent-bot/docs/NEXT_SESSION.md`**
+
+---
+
+## Telegram Agent Bot 部署（舊紀錄，2026-06-25）
+
+<details>
+<summary>展開查看已過時的 2026-06-30 紀錄</summary>
 
 | 項目 | 狀態 |
 |------|------|
@@ -35,24 +82,13 @@ Bot 專案接手：**`line-reminder-bot/docs/NEXT_SESSION.md`**
 | GHCR image（telegram-agent-bot repo） | ✅ push main 觸發建置 |
 | compose 已補 Cloud dev env 映射（`DEV_RUNTIME`、`CLOUD_*`） | ✅ `63d545a` |
 | `.env.example` 已補 Cloud dev 參數與說明 | ✅ `63d545a` |
-| compose ops Phase 1（`OPS_*` env + docker.sock） | ✅ 2026-06-30 |
+| compose ops Phase 1（`OPS_*` env + docker.sock） | ✅ 2026-06-30（**Phase 0A 已移除 docker.sock**） |
 | `.env.example` / `DEPLOY_TELEGRAM_BOT.md` ops 說明 | ✅ 2026-06-30 |
-| `telegram-agent-bot` ops Phase 1 image | ⏳ `feat/ops-phase1-executor` **待 merge** |
-| 主機 `git pull` + `.env` + tunnel | ⏳ **待做** |
+| `telegram-agent-bot` ops Phase 1 image | ✅ 已 merge |
+| 主機 `git pull` + `.env` + tunnel | ⏳ 見上方 GH-4 區塊 |
 | GitHub Action deploy `telegram-bot` | ❌ 曾失敗：`no such service: telegram-playwright`（主機 compose 過期） |
 
-**下一手：**
-
-1. SSH `web-ubuntu` → `cd ~/inwanding-infra && git pull`
-2. `.env` 補齊 Cloud dev 必填（至少 `TELEGRAM_CLOUD_REPOS`）
-3. `.env` 補齊 ops 參數（`TELEGRAM_OPS_*`，對照 `.env.example`）
-4. `docker compose config` 確認 `DEV_RUNTIME`、`CLOUD_*`、`OPS_*`、docker.sock 掛載
-5. `./scripts/setup-telegrambot-tunnel.sh`（首次）
-6. 等 `telegram-agent-bot` ops image merge → Actions **Deploy Service (Manual)** → `telegram-bot`
-7. Telegram 測試 ops 查詢（容器狀態、log、磁碟、健康檢查）
-
-詳見 **[docs/DEPLOY_TELEGRAM_BOT.md](DEPLOY_TELEGRAM_BOT.md)**。  
-Bot 專案接手：**`telegram-agent-bot/docs/NEXT_SESSION.md`**
+</details>
 
 ---
 
