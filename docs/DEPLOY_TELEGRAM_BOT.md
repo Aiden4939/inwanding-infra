@@ -81,6 +81,11 @@ USER_MESSAGE_PER_MINUTE_LIMIT=15
 USER_CONCURRENT_DEV_TASK_LIMIT=1
 GLOBAL_CONCURRENT_AGENT_LIMIT=3
 MIN_AGENT_START_INTERVAL_MS=60000
+TASK_CI_POLL_INTERVAL_SECONDS=20
+TASK_CI_TIMEOUT_SECONDS=1800
+TASK_CI_MAX_POLLS=120
+TASK_MAX_AGENT_RESUMES=3
+TASK_MAX_CI_FIX_ATTEMPTS=3
 ```
 
 ### `.env` 變數對照（避免填了但沒生效）
@@ -101,6 +106,11 @@ MIN_AGENT_START_INTERVAL_MS=60000
 | `TELEGRAM_GITHUB_TOKEN` | `GITHUB_TOKEN` | `telegram-bot` | GitHub read-only PAT（查詢 issues/PR） |
 | `TELEGRAM_GITHUB_ALLOWED_REPOS` | `GITHUB_ALLOWED_REPOS` | `telegram-bot` | 允許查詢的 repo（`owner/repo`，逗號分隔） |
 | `TELEGRAM_GITHUB_ISSUE_LIMIT` | `GITHUB_ISSUE_LIMIT` | `telegram-bot` | 單次回傳最多幾筆 issues/PR（預設 10） |
+| `TASK_CI_POLL_INTERVAL_SECONDS` | `TASK_CI_POLL_INTERVAL_SECONDS` | `telegram-bot` | CI 輪詢間隔秒數 |
+| `TASK_CI_TIMEOUT_SECONDS` | `TASK_CI_TIMEOUT_SECONDS` | `telegram-bot` | CI 輪詢總逾時秒數 |
+| `TASK_CI_MAX_POLLS` | `TASK_CI_MAX_POLLS` | `telegram-bot` | CI 最多輪詢次數 |
+| `TASK_MAX_AGENT_RESUMES` | `TASK_MAX_AGENT_RESUMES` | `telegram-bot` | Agent resume 上限 |
+| `TASK_MAX_CI_FIX_ATTEMPTS` | `TASK_MAX_CI_FIX_ATTEMPTS` | `telegram-bot` | CI 修復嘗試上限 |
 | `TELEGRAM_TAISHIN_ENABLED` | `TAISHIN_ENABLED` | `telegram-bot` | 啟用台新證券持股查詢 |
 | `TELEGRAM_TAISHIN_NATIONAL_ID` | `TAISHIN_NATIONAL_ID` | `telegram-bot` | 身分證字號 |
 | `TELEGRAM_TAISHIN_PASSWORD` | `TAISHIN_PASSWORD` | `telegram-bot` | 登入密碼 |
@@ -195,6 +205,7 @@ docker compose up -d telegram-playwright telegram-bot
 
 - Bot 使用 **webhook 模式**，`WEBHOOK_URL` 必須是 HTTPS 公網網址。
 - **開發任務**需 `TELEGRAM_CURSOR_API_KEY`，Production 使用 cloud runtime，不掛載 host `/workspace`。
+- GitHub token 最小權限：`Contents: Read`、`Pull requests: Read and Write`、`Actions: Read`、`Metadata: Read`。
 - **ops 查詢**預設僅 HTTP Health Check；**不得**為 Bot 掛載 docker.sock。
 - **台新證券持股查詢（GH-1）**：image 已內建 `taishin-sdk`；`.env` 與憑證準備好後再設 `TELEGRAM_TAISHIN_ENABLED=true`（見下方）。
 - SQLite 資料在 volume `telegram_bot_data`，**勿隨意刪除**。
