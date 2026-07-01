@@ -12,6 +12,7 @@ Telegram 伺服器
        ├─ scrape → svc-telegram-playwright:3100
        ├─ dev    → Cursor SDK（讀 /workspace 掛載）
        ├─ ops    → HTTP Health Check（Docker 查詢預設停用）
+       ├─ securities → 台新 Nova API 持股查詢（預設關閉）
        └─ chat   → OpenAI
   → SQLite volume: telegram_bot_data
 ```
@@ -75,6 +76,11 @@ TELEGRAM_OPS_LOG_TAIL_LINES=50
 | `TELEGRAM_OPS_HEALTH_URLS` | `OPS_HEALTH_URLS` | `telegram-bot` | 逗號分隔 HTTP 健康檢查 URL |
 | `TELEGRAM_OPS_COMMAND_TIMEOUT_MS` | `OPS_COMMAND_TIMEOUT_MS` | `telegram-bot` | 單次 ops 指令逾時（毫秒） |
 | `TELEGRAM_OPS_LOG_TAIL_LINES` | `OPS_LOG_TAIL_LINES` | `telegram-bot` | `tail_logs` 預設行數 |
+| `TELEGRAM_TAISHIN_ENABLED` | `TAISHIN_ENABLED` | `telegram-bot` | 啟用台新證券持股查詢 |
+| `TELEGRAM_TAISHIN_NATIONAL_ID` | `TAISHIN_NATIONAL_ID` | `telegram-bot` | 身分證字號 |
+| `TELEGRAM_TAISHIN_PASSWORD` | `TAISHIN_PASSWORD` | `telegram-bot` | 登入密碼 |
+| `TELEGRAM_TAISHIN_CERT_PASSWORD` | `TAISHIN_CERT_PASSWORD` | `telegram-bot` | 憑證密碼 |
+| `TELEGRAM_TAISHIN_ACCOUNT_ID` | `TAISHIN_ACCOUNT_ID` | `telegram-bot` | 選填，多帳戶時指定 |
 
 ### ops 與安全邊界（Phase 0A）
 
@@ -163,8 +169,35 @@ docker compose up -d telegram-playwright telegram-bot
 - Bot 使用 **webhook 模式**，`WEBHOOK_URL` 必須是 HTTPS 公網網址。
 - **開發任務**需 `TELEGRAM_CURSOR_API_KEY`，且容器內 `/workspace` 必須能讀到程式碼。
 - **ops 查詢**預設僅 HTTP Health Check；**不得**為 Bot 掛載 docker.sock。
+- **台新證券持股查詢（GH-1）**：image 已內建 `taishin-sdk`；`.env` 與憑證準備好後再設 `TELEGRAM_TAISHIN_ENABLED=true`（見下方）。
 - SQLite 資料在 volume `telegram_bot_data`，**勿隨意刪除**。
 - 若只改 nginx conf，備份後 `nginx -t` → `reload` 即可，不必重建 bot 容器。
+
+## 台新證券持股查詢（GH-1，選用）
+
+前提：API 協議已簽署完成（不需 `registerApiAuth`）。
+
+### infra `.env` 變數
+
+| infra key | 容器內 key | 說明 |
+|---|---|---|
+| `TELEGRAM_TAISHIN_ENABLED` | `TAISHIN_ENABLED` | `true` 啟用 |
+| `TELEGRAM_TAISHIN_NATIONAL_ID` | `TAISHIN_NATIONAL_ID` | 身分證字號 |
+| `TELEGRAM_TAISHIN_PASSWORD` | `TAISHIN_PASSWORD` | 登入密碼 |
+| `TELEGRAM_TAISHIN_CERT_PASSWORD` | `TAISHIN_CERT_PASSWORD` | 憑證密碼 |
+| `TELEGRAM_TAISHIN_ACCOUNT_ID` | `TAISHIN_ACCOUNT_ID` | 選填，多帳戶時指定 |
+
+### 憑證掛載（啟用前必做）
+
+在 `docker-compose.yml` 的 `telegram-bot.volumes` 加入（路徑依主機調整）：
+
+```yaml
+- /home/aiden/secrets/taishin-cert.p12:/run/secrets/taishin-cert.p12:ro
+```
+
+並設定 `TELEGRAM_TAISHIN_CERT_PATH` 對應容器內路徑（compose 預設 `/run/secrets/taishin-cert.p12`）。
+
+SDK 透過 Nova API `accounting.inventories()` 查庫存，Bot 跑在 Linux 容器（`node:22-bookworm-slim`）。
 
 ## Rollback
 
