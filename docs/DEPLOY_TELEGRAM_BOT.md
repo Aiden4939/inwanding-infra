@@ -59,6 +59,11 @@ TELEGRAM_OPS_ALLOWED_CONTAINERS=svc-telegram-bot,svc-telegram-playwright,svc-lin
 TELEGRAM_OPS_HEALTH_URLS=http://api:3000/health,http://line-bot:3000/health,http://telegram-playwright:3100/health,http://telegram-bot:3001/health
 TELEGRAM_OPS_COMMAND_TIMEOUT_MS=30000
 TELEGRAM_OPS_LOG_TAIL_LINES=50
+
+# GitHub 查詢（Phase 1 唯讀）
+TELEGRAM_GITHUB_TOKEN=ghp_...
+TELEGRAM_GITHUB_ALLOWED_REPOS=Aiden4939/telegram-agent-bot
+TELEGRAM_GITHUB_ISSUE_LIMIT=10
 ```
 
 ### `.env` 變數對照（避免填了但沒生效）
@@ -76,6 +81,9 @@ TELEGRAM_OPS_LOG_TAIL_LINES=50
 | `TELEGRAM_OPS_HEALTH_URLS` | `OPS_HEALTH_URLS` | `telegram-bot` | 逗號分隔 HTTP 健康檢查 URL |
 | `TELEGRAM_OPS_COMMAND_TIMEOUT_MS` | `OPS_COMMAND_TIMEOUT_MS` | `telegram-bot` | 單次 ops 指令逾時（毫秒） |
 | `TELEGRAM_OPS_LOG_TAIL_LINES` | `OPS_LOG_TAIL_LINES` | `telegram-bot` | `tail_logs` 預設行數 |
+| `TELEGRAM_GITHUB_TOKEN` | `GITHUB_TOKEN` | `telegram-bot` | GitHub read-only PAT（查詢 issues/PR） |
+| `TELEGRAM_GITHUB_ALLOWED_REPOS` | `GITHUB_ALLOWED_REPOS` | `telegram-bot` | 允許查詢的 repo（`owner/repo`，逗號分隔） |
+| `TELEGRAM_GITHUB_ISSUE_LIMIT` | `GITHUB_ISSUE_LIMIT` | `telegram-bot` | 單次回傳最多幾筆 issues/PR（預設 10） |
 | `TELEGRAM_TAISHIN_ENABLED` | `TAISHIN_ENABLED` | `telegram-bot` | 啟用台新證券持股查詢 |
 | `TELEGRAM_TAISHIN_NATIONAL_ID` | `TAISHIN_NATIONAL_ID` | `telegram-bot` | 身分證字號 |
 | `TELEGRAM_TAISHIN_PASSWORD` | `TAISHIN_PASSWORD` | `telegram-bot` | 登入密碼 |
@@ -153,6 +161,8 @@ docker compose logs -f telegram-bot telegram-playwright
 ```
 
 在 Telegram 對 Bot 傳 `/status` 或測試訊息。
+
+若已設定 `TELEGRAM_GITHUB_TOKEN` 與 `TELEGRAM_GITHUB_ALLOWED_REPOS`，可傳「幫我看 telegram-agent-bot 有哪些 open issue」驗證 GitHub 唯讀查詢。
 
 ## 更新部署
 
